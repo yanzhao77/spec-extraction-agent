@@ -509,6 +509,46 @@ violations = bim_system.check_compliance()
 
 ## 附录B：失败与修复案例分析 (v2.3)
 
+### B.2 自我修复流程图
+
+下图详细描述了当`VALIDATION`状态检测到错误时，Agent如何进入`REPAIR`状态并进行自我修复的闭环流程。
+
+![Self-Repair Flow](assets/self_repair_flow.png)
+
+### B.3 修复过程日志分析
+
+以下是从`agent_mvp_final.log`中截取的关键日志片段，它清晰地展示了Agent的自我修复过程：
+
+**1. 进入校验状态，发现错误**
+```log
+[2025-12-30 10:30:24,440] INFO: STATE TRANSITION: EXTRACTION -> VALIDATION
+[2025-12-30 10:30:24,440] WARNING: JSON parsing/validation failed for result from '...'. Error: LLM output is not a JSON array.
+[2025-12-30 10:30:24,440] WARNING: Schema validation failed for item from '...'. Errors: [\"Numeric 'value' requires a 'unit'\"]
+```
+*分析：* Agent在`VALIDATION`状态发现LLM返回的不是一个数组，并且一个数字类型的值缺少了单位。
+
+**2. 进入修复状态**
+```log
+[2025-12-30 10:30:24,440] INFO: 5 items failed validation. Entering REPAIR state.
+[2025-12-30 10:30:24,440] INFO: STATE TRANSITION: VALIDATION -> REPAIR
+```
+*分析：* 由于校验失败，Agent自动转换到`REPAIR`状态。
+
+**3. 尝试修复**
+```log
+[2025-12-30 10:30:24,440] INFO: Attempting to repair item from '...' (Attempt 1)
+[2025-12-30 10:30:27,851] INFO: HTTP Request: POST https://api.manus.im/api/llm-proxy/v1/chat/completions \"HTTP/1.1 200 OK\"
+```
+*分析：* Agent生成一个针对性的修复Prompt，并重新调用LLM，要求其修正错误。
+
+**4. 修复成功，重新校验**
+```log
+[2025-12-30 10:30:30,727] INFO: STATE TRANSITION: REPAIR -> VALIDATION
+[2025-12-30 10:30:30,728] INFO: All items validated successfully.
+[2025-12-30 10:30:30,728] INFO: STATE TRANSITION: VALIDATION -> FINALIZE
+```
+*分析：* 修复后的结果被送回`VALIDATION`状态，并成功通过校验。Agent随后进入`FINALIZE`状态，继续后续流程。
+
 本节展示一个在真实测试中捕获的“抽取 → 校验失败 → 修复 → 校验成功”的完整案例，以证明Agent的自我修复能力。
 
 ### B.1 初始抽取与失败

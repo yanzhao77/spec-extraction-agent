@@ -1,0 +1,18 @@
+graph TD
+    A[Start: EXTRACTION] --> B{LLM Returns Result};
+    B --> C{Is JSON Valid?};
+    C -- Yes --> D{Is Schema Compliant?};
+    D -- Yes --> E[End: VALIDATED];
+    C -- No --> F[Log JSON Error];
+    D -- No --> G[Log Schema Error];
+    F --> H{Enter REPAIR State};
+    G --> H;
+    H --> I[Generate Repair Prompt];
+    I --> J{Call LLM to Fix JSON};
+    J --> K{Re-enter VALIDATION State};
+    K --> C;
+
+    style A fill:#c9ffc9,stroke:#333,stroke-width:2px
+    style E fill:#c9ffc9,stroke:#333,stroke-width:2px
+    style H fill:#ffc9c9,stroke:#333,stroke-width:2px
+    style K fill:#fff8c9,stroke:#333,stroke-width:2px

@@ -568,7 +568,49 @@ Authorization: Bearer YOUR_API_KEY
 
 ---
 
-## 5. 速率限制
+## 5. 示例调用
+
+以下是一个使用`curl`调用API的示例，用于从一个PDF文档中抽取约束。
+
+```bash
+curl -X POST http://localhost:8000/v1/extract \
+  -H "Content-Type: multipart/form-data" \
+  -F "document=@/path/to/your/GB50016_2014_sample.pdf" \
+  -F "schema=@/path/to/your/schema.json"
+```
+
+### 响应示例
+
+```json
+{
+  "status": "success",
+  "message": "Extraction completed successfully.",
+  "data": {
+    "validated_items": [
+      {
+        "id": "c7a1b2f8-3e4d-4f6a-8c1b-9d0a1b2c3d4e",
+        "source_document": "GB50016_2014_sample.pdf",
+        "source_ref": "Section 7.1.1, Page 45",
+        "applicable_object": "防火墙",
+        "constraint_content": "耐火极限不应低于4.00h",
+        "value": 4.0,
+        "unit": "h",
+        "operator": ">=",
+        "pre_condition": null,
+        "extraction_metadata": {
+          "extraction_timestamp": "2025-12-30T10:30:25Z",
+          "agent_version": "2.3-final",
+          "llm_model_used": "gemini-2.5-flash",
+          "confidence_score": 0.98
+        }
+      }
+    ],
+    "failed_items_count": 0
+  }
+}
+```
+
+## 6. 速率限制
 
 API实施以下速率限制：
 
