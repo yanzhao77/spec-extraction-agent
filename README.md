@@ -1,109 +1,112 @@
-> **Note:** This project is an MVP implementation of a task-oriented, FSM-driven agent designed for high-reliability structured data extraction. Its core value lies in the architectural pattern, not just the extraction performance.
+> **语言(Language):** [**中文**](./README.md) | [**English**](./README_EN.md)
 
-# Engineering Specification Extraction Agent
+> **注意:** 本项目是一个任务型、FSM驱动的智能体的MVP实现，专为高可靠性的结构化数据抽取而设计。其核心价值在于架构模式，而不仅仅是抽取性能。
 
-![Status](https://img.shields.io/badge/status-MVP-green)
-![Version](https://img.shields.io/badge/version-2.3-blue)
+# 工程规范文档结构化抽取智能体
+
+![状态](https://img.shields.io/badge/status-MVP-green)
+![版本](https://img.shields.io/badge/version-2.3-blue)
 ![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
+![许可](https://img.shields.io/badge/license-MIT-lightgrey)
 
-This is a **task-oriented, FSM-driven agent** for structured data extraction from engineering documents. It is designed for high-reliability, auditable, and automated workflows, such as extracting executable constraints from building codes, mechanical specifications, or compliance documents.
+这是一个**任务型、状态机驱动的智能体**，用于从工程文档中进行结构化数据抽取。它专为高可靠性、可审计和自动化的工作流而设计，例如从建筑规范、机械规格或合规文件中抽取可执行的约束条件。
 
-Unlike a general-purpose chatbot, this agent operates as a deterministic engine, prioritizing accuracy and traceability over conversational ability.
+与通用聊天机器人不同，本智能体作为一个确定性的引擎运行，优先考虑准确性和可追溯性，而非对话能力。
 
-## ✨ Key Features
+## ✨ 核心特性
 
-- **🤖 Self-Repair Mechanism:** Automatically detects, analyzes, and attempts to fix failed extractions (e.g., malformed JSON, missing required fields). This is the core of its engineering-grade reliability.
-- **📄 Strict JSON Schema Output:** All outputs are rigorously validated against a predefined JSON schema, ensuring data consistency and immediate usability for downstream systems.
-- **🔍 Full Traceability & Auditing:** Every extracted piece of data is linked back to its original source in the document (`source_ref`), and the entire process is logged step-by-step, including state transitions and repair attempts.
-- **🎯 Task-Oriented & Non-Conversational:** Built as a pure extraction engine, not a chatbot. It follows a deterministic, state-driven process (`Plan -> Act -> Verify -> Repair`) to achieve its goal.
+- **🤖 自我修复机制 (Self-Repair):** 自动检测、分析并尝试修复失败的抽取结果（例如，格式错误的JSON、缺少必填字段）。这是其工程级可靠性的核心。
+- **📄 严格的JSON Schema输出:** 所有输出都经过预定义JSON Schema的严格校验，确保数据一致性和下游系统的直接可用性。
+- **🔍 完全可追溯与可审计:** 每一条抽取的数据都链接回其在文档中的原始来源 (`source_ref`)，并且整个过程（包括状态转换和修复尝试）都被详细地记录下来。
+- **🎯 任务导向与非对话式:** 作为一个纯粹的抽取引擎而非聊天机器人构建。它遵循一个确定性的、状态驱动的流程（`规划 -> 执行 -> 校验 -> 修复`）来实现其目标。
 
 ---
 
-## 🚀 Quick Start: See Self-Repair in Action
+## 🚀 快速开始：体验自我修复流程
 
-We've made it easy to see the agent's core self-repair mechanism. The provided example is designed to fail on the first attempt and then repair itself.
+我们提供了一个简单的示例，让您可以轻松地看到智能体的核心——自我修复机制的实际运作。该示例被设计为在第一次尝试时失败，然后进行自我修复。
 
-### 1. Environment Setup
+### 1. 环境设置
 
 ```bash
-# Clone the repository
+# 克隆仓库
 git clone https://github.com/yanzhao77/spec-extraction-agent.git
 cd spec-extraction-agent
 
-# Install dependencies
+# 安装依赖
 pip install -r requirements.txt
 
-# Set your API Key (uses OpenAI-compatible APIs like Gemini)
-export OPENAI_API_KEY="your_api_key_here"
+# 设置您的API密钥 (使用与OpenAI兼容的API，如Gemini)
+export OPENAI_API_KEY="在此处填入您的API密钥"
 ```
 
-### 2. One-Click Run Example
+### 2. 一键运行示例
 
-Run the example script. It will process a sample engineering document, intentionally trigger a validation failure, and demonstrate the self-repair loop.
+运行示例脚本。它将处理一个样本工程文档，故意触发一个校验失败，并演示自我修复循环。
 
 ```bash
 python examples/run_example.py
 ```
 
-### 3. Expected Output
+### 3. 预期输出
 
-You will see a detailed log in your console, showcasing the agent's entire process. The most important part is the **Validation -> Repair -> Validation** loop:
+您将在控制台中看到详细的日志，展示智能体的完整处理流程。最重要的部分是 **校验 -> 修复 -> 再次校验** 的循环：
 
 ```log
-# ... (Initial extraction logs)
+# ... (初始抽取日志)
 
-[2025-12-30 10:30:24,440] INFO: STATE TRANSITION: EXTRACTION -> VALIDATION
-[2025-12-30 10:30:24,440] WARNING: JSON parsing/validation failed for result from '...'. Error: LLM output is not a JSON array.
-[2025-12-30 10:30:24,440] WARNING: Schema validation failed for item from '...'. Errors: [\"Numeric 'value' requires a 'unit'\"]
-[2025-12-30 10:30:24,440] INFO: 5 items failed validation. Entering REPAIR state.
+[2025-12-30 10:30:24,440] INFO: 状态转换: EXTRACTION -> VALIDATION
+[2025-12-30 10:30:24,440] WARNING: 来自'...'的结果JSON解析/校验失败。错误: LLM输出不是一个JSON数组。
+[2025-12-30 10:30:24,440] WARNING: 来自'...'的条目Schema校验失败。错误: [\"数字类型的'value'需要一个'unit'\"]
+[2025-12-30 10:30:24,440] INFO: 5个条目校验失败。进入REPAIR状态。
 
-# --- The Self-Repair Loop Begins --- #
-[2025-12-30 10:30:24,440] INFO: STATE TRANSITION: VALIDATION -> REPAIR
-[2025-12-30 10:30:24,440] INFO: Attempting to repair item from '...' (Attempt 1)
-[2025-12-30 10:30:27,851] INFO: HTTP Request: POST https://api.manus.im/api/llm-proxy/v1/chat/completions \"HTTP/1.1 200 OK\"
+# --- 自我修复循环开始 --- #
+[2025-12-30 10:30:24,440] INFO: 状态转换: VALIDATION -> REPAIR
+[2025-12-30 10:30:24,440] INFO: 尝试修复来自'...'的条目 (第1次尝试)
+[2025-12-30 10:30:27,851] INFO: HTTP请求: POST https://api.manus.im/api/llm-proxy/v1/chat/completions \"HTTP/1.1 200 OK\"
 
-# --- Repair Succeeded, Re-Validating --- #
-[2025-12-30 10:30:30,727] INFO: STATE TRANSITION: REPAIR -> VALIDATION
-[2025-12-30 10:30:30,728] INFO: All items validated successfully.
-[2025-12-30 10:30:30,728] INFO: STATE TRANSITION: VALIDATION -> FINALIZE
+# --- 修复成功，重新校验 --- #
+[2025-12-30 10:30:30,727] INFO: 状态转换: REPAIR -> VALIDATION
+[2025-12-30 10:30:30,728] INFO: 所有条目校验成功。
+[2025-12-30 10:30:30,728] INFO: 状态转换: VALIDATION -> FINALIZE
 
-# ... (Final output generation)
+# ... (生成最终输出)
 
-✅ EXTRACTION COMPLETE: 21 constraints extracted and validated.
+✅ 抽取完成: 21条约束被成功抽取和校验。
+```
 
 ---
 
-## 📂 Project Structure
+## 📂 项目结构
 
 ```
 spec-extraction-agent/
-├── docs/                  # Detailed documentation
-│   ├── TECHNICAL_WHITEPAPER.md  # System architecture, design principles, and performance.
-│   └── API_DOCUMENTATION.md     # REST API interface for deploying the agent as a service.
-├── examples/              # Example documents and run scripts
-│   ├── GB50016_2014_sample.txt  # Sample engineering specification document.
-│   └── run_example.py           # One-click script to run the demo.
-├── src/                   # Core source code
-│   └── agent.py               # The main FSM-driven agent logic.
-├── .github/               # GitHub-specific files (CI, issue templates)
-├── logs/                  # Log files are stored here by default.
-├── README.md              # This file.
-└── requirements.txt       # Python dependencies.
+├── docs/                  # 详细文档
+│   ├── TECHNICAL_WHITEPAPER.md  # 系统架构、设计原则和性能
+│   └── API_DOCUMENTATION.md     # 将智能体部署为服务时使用的REST API接口
+├── examples/              # 示例文档和运行脚本
+│   ├── GB50016_2014_sample.txt  # 样本工程规范文档
+│   └── run_example.py           # 一键运行示例的脚本
+├── src/                   # 核心源代码
+│   └── agent.py               # 主要的FSM驱动的智能体逻辑
+├── .github/               # GitHub相关文件 (CI, issue模板)
+├── logs/                  # 默认情况下，日志文件存储在此处
+├── README.md              # 本文件
+└── requirements.txt       # Python依赖
 ```
 
-## ⚙️ System Architecture
+## ⚙️ 系统架构
 
-The agent's behavior is governed by an 8-stage Finite State Machine (FSM), which ensures the process is deterministic and auditable. The `VALIDATION` -> `REPAIR` loop is the key to its robustness.
+智能体的行为由一个8阶段的有限状态机（FSM）控制，这确保了过程的确定性和可审计性。`VALIDATION` -> `REPAIR`的循环是其鲁棒性的关键。
 
-![State Machine](docs/state_machine.png)
+![状态机](docs/state_machine.png)
 
-For a deep dive into the architecture, design principles, and performance metrics, please see the [**Technical Whitepaper**](docs/TECHNICAL_WHITEPAPER.md).
+要深入了解架构、设计原则和性能指标，请参阅[**技术白皮书**](docs/TECHNICAL_WHITEPAPER.md)。
 
-## 🤝 Contributing
+## 🤝 贡献
 
-Contributions are welcome! Whether it's bug reports, feature requests, or code improvements, please feel free to open an issue or submit a pull request. See our [**Contributing Guidelines**](CONTRIBUTING.md) for more details.
+欢迎任何形式的贡献！无论是bug报告、功能请求还是代码改进，请随时创建Issue或提交Pull Request。更多细节请参阅我们的[**贡献指南**](CONTRIBUTING.md)。
 
-## 📄 License
+## 📄 许可证
 
-This project is licensed under the [MIT License](LICENSE).
+本项目采用[MIT许可证](LICENSE)。
