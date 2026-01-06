@@ -1,0 +1,32 @@
+{
+  "name": "工程规范文档结构化抽取智能体",
+  "description": "一个任务型、状态机驱动的智能体，用于从工程文档中进行高可靠性的结构化数据抽取。",
+  "version": "2.3.0",
+  "author": "Manus AI & Community",
+  "email": "contact@manus.im",
+  "license": "MIT",
+  "tasks": [
+    "structured-data-extraction",
+    "document-understanding",
+    "natural-language-processing"
+  ],
+  "framework": "python",
+  "deployment": {
+    "type": "docker",
+    "dockerfile": "Dockerfile",
+    "ports": {
+      "api": 8000,
+      "ui": 7860
+    },
+    "endpoints": {
+      "api": "/v1/extract",
+      "ui": "/",
+      "health": "/health"
+    }
+  },
+  "dependencies": {
+    "python": "3.9+",
+    "requirements": "requirements.txt"
+  },
+  "homepage": "https://github.com/yanzhao77/spec-extraction-agent"
+}
