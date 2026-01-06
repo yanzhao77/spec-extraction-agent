@@ -12,9 +12,9 @@ import logging
 # --- Setup Logging ---
 logging.basicConfig(
     level=logging.INFO,
-    format=\'[%(asctime)s] %(levelname)s: %(message)s\',
+    format='[%(asctime)s] %(levelname)s: %(message)s',
     handlers=[
-        logging.FileHandler(\'agent_mvp_final.log\', mode=\'w\'),
+        logging.FileHandler('agent_mvp_final.log', mode='w'),
         logging.StreamHandler()
     ]
 )
@@ -90,8 +90,8 @@ class LLMClient:
         if not self.client:
             logger.warning("LLM client not available. Returning mock response.")
             if "防火墙" in user_prompt:
-                return \'{\"applicable_object\": \"防火墙\", \"constraint_content\": \"耐火极限\", \"value\": 4.0, \"operator\": \">=\"}\'
-            return \'[]\'
+                return '{"applicable_object": "防火墙", "constraint_content": "耐火极限", "value": 4.0, "operator": ">="}'
+            return '[]'
 
         try:
             response = self.client.chat.completions.create(
@@ -132,7 +132,7 @@ class ExtractionAgentFinal:
 
     def _ingest_document(self):
         try:
-            with open(self.document_path, \'r\', encoding=\'utf-8\') as f:
+            with open(self.document_path, 'r', encoding='utf-8') as f:
                 self.document_content = f.read()
             logger.info(f"Document ingested successfully ({len(self.document_content)} chars).")
             self._set_state(AgentState.STRUCTURE_ANALYSIS)
@@ -141,12 +141,12 @@ class ExtractionAgentFinal:
             self._set_state(AgentState.ERROR)
 
     def _analyze_structure(self):
-        sections = self.document_content.split(\'\n\n\')
+        sections = self.document_content.split('nn')
         for i, section in enumerate(sections):
             if len(section.strip()) > 50:
                 self.document_chunks.append({
                     "id": f"chunk_{i}",
-                    "source_ref": section.split(\'\n\')[0][:70],
+                    "source_ref": section.split('n')[0][:70],
                     "text": section
                 })
         logger.info(f"Document structure analyzed into {len(self.document_chunks)} chunks.")
@@ -162,14 +162,14 @@ class ExtractionAgentFinal:
         self._set_state(AgentState.EXTRACTION)
 
     def _extract(self):
-        system_prompt = f\"\"\"You are an expert extraction AI. Extract constraints from the text based on the user\\'s goal. Return ONLY a valid JSON array of objects matching this schema: {json.dumps(OUTPUT_SCHEMA)}. If no constraints are found, return an empty array [].\"\"\"
+        system_prompt = f"""You are an expert extraction AI. Extract constraints from the text based on the user's goal. Return ONLY a valid JSON array of objects matching this schema: {json.dumps(OUTPUT_SCHEMA)}. If no constraints are found, return an empty array []."""
         
         for goal in self.extraction_goals:
-            relevant_chunks = [c for c in self.document_chunks if any(kw in c[\'text\'] for kw in goal[\'keywords\'])]
+            relevant_chunks = [c for c in self.document_chunks if any(kw in c['text'] for kw in goal['keywords'])]
             for chunk in relevant_chunks:
-                user_prompt = f"Extract constraints for \'{goal[\'name\']}\' from this text:\n\n{chunk[\'text\']}"
+                user_prompt = f"Extract constraints for '{goal['name']}' from this text:nn{chunk['text']}"
                 raw_output = self.llm_client.call(system_prompt, user_prompt)
-                self.extraction_results.append(ExtractionResult(raw_text=raw_output, source_ref=chunk[\'source_ref\'], goal_id=goal[\'id\']))
+                self.extraction_results.append(ExtractionResult(raw_text=raw_output, source_ref=chunk['source_ref'], goal_id=goal['id']))
         
         logger.info(f"Extraction phase complete. {len(self.extraction_results)} raw results obtained.")
         self._set_state(AgentState.VALIDATION)
@@ -190,14 +190,14 @@ class ExtractionAgentFinal:
                 for item in parsed:
                     is_valid, errors = self._validate_item_schema(item)
                     if is_valid:
-                        item[\'source_ref\'] = result.source_ref
+                        item['source_ref'] = result.source_ref
                         self.validated_items.append(item)
                     else:
                         newly_failed.append({"item": item, "errors": errors, "source_ref": result.source_ref, "retry_count": 0})
-                        logger.warning(f"Schema validation failed for item from \'{result.source_ref}\'. Errors: {errors}")
+                        logger.warning(f"Schema validation failed for item from '{result.source_ref}'. Errors: {errors}")
 
             except (json.JSONDecodeError, TypeError) as e:
-                logger.warning(f"JSON parsing/validation failed for result from \'{result.source_ref}\'. Error: {e}")
+                logger.warning(f"JSON parsing/validation failed for result from '{result.source_ref}'. Error: {e}")
                 newly_failed.append({"raw_text": result.raw_text, "errors": [str(e)], "source_ref": result.source_ref, "retry_count": 0})
 
         if newly_failed:
@@ -212,11 +212,11 @@ class ExtractionAgentFinal:
 
     def _validate_item_schema(self, item: Dict) -> tuple[bool, List[str]]:
         errors = []
-        for field in OUTPUT_SCHEMA[\'required\']:
+        for field in OUTPUT_SCHEMA['required']:
             if field not in item or not item.get(field):
-                errors.append(f"Missing required field: \'{field}\'")
-        if \'value\' in item and isinstance(item[\'value\'], (int, float)) and not item.get(\'unit\'):
-            errors.append("Numeric \'value\' requires a \'unit\'.")
+                errors.append(f"Missing required field: '{field}'")
+        if 'value' in item and isinstance(item['value'], (int, float)) and not item.get('unit'):
+            errors.append("Numeric 'value' requires a 'unit'.")
         return len(errors) == 0, errors
 
     def _repair(self):
@@ -224,21 +224,21 @@ class ExtractionAgentFinal:
         items_to_retry = self.failed_items
         self.failed_items = []
 
-        system_prompt = f\"\"\"You are a JSON repair expert. Correct the provided JSON based on the error description and schema. Return ONLY the corrected, valid JSON array. Schema: {json.dumps(OUTPUT_SCHEMA)}\"\"\"
+        system_prompt = f"""You are a JSON repair expert. Correct the provided JSON based on the error description and schema. Return ONLY the corrected, valid JSON array. Schema: {json.dumps(OUTPUT_SCHEMA)}"""
 
         for failed in items_to_retry:
-            if failed[\'retry_count\'] >= max_retries:
-                logger.error(f"Max retries exceeded for item from \'{failed[\'source_ref\']}\'. Discarding.")
+            if failed['retry_count'] >= max_retries:
+                logger.error(f"Max retries exceeded for item from '{failed['source_ref']}'. Discarding.")
                 continue
 
-            error_desc = "; ".join(failed[\'errors\'])
-            original_data = failed.get(\'raw_text\') or json.dumps(failed.get(\'item\'))
-            user_prompt = f"The following JSON is invalid. Please fix it.\nErrors: {error_desc}\nInvalid JSON: {original_data}"
+            error_desc = "; ".join(failed['errors'])
+            original_data = failed.get('raw_text') or json.dumps(failed.get('item'))
+            user_prompt = f"The following JSON is invalid. Please fix it.nErrors: {error_desc}nInvalid JSON: {original_data}"
             
-            logger.info(f"Attempting to repair item from \'{failed[\'source_ref\']}\' (Attempt {failed[\'retry_count\'] + 1})")
+            logger.info(f"Attempting to repair item from '{failed['source_ref']}' (Attempt {failed['retry_count'] + 1})")
             repaired_output = self.llm_client.call(system_prompt, user_prompt)
             
-            self.extraction_results.append(ExtractionResult(raw_text=repaired_output, source_ref=failed[\'source_ref\'], goal_id=\'repair\'))
+            self.extraction_results.append(ExtractionResult(raw_text=repaired_output, source_ref=failed['source_ref'], goal_id='repair'))
 
         self._set_state(AgentState.VALIDATION)
 
@@ -249,9 +249,9 @@ class ExtractionAgentFinal:
             "failed_items_count": len(self.failed_items)
         }
         for item in self.validated_items:
-            item[\'id\'] = str(uuid.uuid4())
-            item[\'source_document\'] = self.document_path
-            item[\'extraction_metadata\'] = {
+            item['id'] = str(uuid.uuid4())
+            item['source_document'] = self.document_path
+            item['extraction_metadata'] = {
                 "extraction_timestamp": datetime.now().isoformat(),
                 "agent_version": "2.6.0",
                 "confidence_score": 0.98

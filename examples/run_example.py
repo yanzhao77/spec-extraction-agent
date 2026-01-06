@@ -21,6 +21,7 @@ import logging
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.agent import ExtractionAgentFinal
+os.environ["OPENAI_API_KEY"] = "2cb6d2e323ed4f3badc136090daa0ccb.87GF3FfJmNUuQcSd"
 
 def main():
     """Main function to run the agent and display results."""

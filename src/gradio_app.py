@@ -19,7 +19,8 @@ def extract(file):
             data = response.json()
             # Pretty-print the JSON output
             pretty_json = json.dumps(data["content"], indent=2, ensure_ascii=False)
-            return f"✅ Extraction successful for {data["filename"]}", pretty_json
+            data_filename = data["filename"]
+            return f"✅ Extraction successful for {data_filename}", pretty_json
         else:
             return f"❌ Error: {response.status_code}", response.text
 
