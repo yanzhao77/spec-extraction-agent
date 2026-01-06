@@ -77,7 +77,45 @@ python examples/run_example.py
 
 ---
 
+## 部署到ModelScope创空间
+
+本项目已适配ModelScope创空间，可实现一键部署。
+
+### README.md YAML头配置
+
+为了让ModelScope正确识别，请确保您的`README.md`文件包含以下YAML头信息：
+
+```yaml
+---
+title: 工程规范抽取智能体API
+description: 一个用于从工程规范文档中抽取结构化约束的、可按次收费的Agent API服务。
+app_file: app.py
+app_port: 7860
+sdk: fastapi
+sdk_version: 0.104.1
+---
+```
+
+### 环境变量
+
+在ModelScope创空间的"设置"页面，配置以下环境变量：
+
+- `OPENAI_API_KEY`: 您的LLM API密钥。
+- `AGENT_API_KEY`: 您为API服务设置的访问密钥。
+
+### 部署步骤
+
+1. 登录ModelScope并进入"创空间"。
+2. 点击"新建创空间"，选择"从GitHub仓库导入"。
+3. 填入本仓库地址：`https://github.com/yanzhao77/spec-extraction-agent`
+4. 在"设置"中配置好环境变量。
+5. ModelScope将自动拉取代码并根据配置启动服务。
+6. 部署成功后，您将获得一个公网访问地址，即可通过API调用该地址调用您的Agent服务。
+
+---
+
 ## 📂 项目结构
+
 
 ```
 spec-extraction-agent/
@@ -110,3 +148,4 @@ spec-extraction-agent/
 ## 📄 许可证
 
 本项目采用[MIT许可证](LICENSE)。
+许可证](LICENSE)。
