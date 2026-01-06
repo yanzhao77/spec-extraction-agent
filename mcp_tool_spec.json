@@ -1,0 +1,29 @@
+{
+  "tools": [
+    {
+      "name": "extract_constraints_from_document",
+      "description": "从工程规范文档中抽取结构化约束。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "document_path": {
+            "type": "string",
+            "description": "要处理的文档的路径或URL。"
+          },
+          "user_id": {
+            "type": "string",
+            "description": "用于追踪和计费的用户ID。"
+          }
+        },
+        "required": ["document_path", "user_id"]
+      },
+      "endpoint": {
+        "path": "/v1/extract",
+        "method": "POST",
+        "request_format": "json",
+        "response_format": "json",
+        "streamable": true
+      }
+    }
+  ]
+}

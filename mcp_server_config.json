@@ -1,0 +1,22 @@
+{
+  "mcp_version": "1.0",
+  "server": {
+    "name": "SpecExtractionAgent",
+    "description": "一个用于从工程规范文档中抽取结构化约束的、可按次收费的Agent API服务。",
+    "url": "https://your-api-server-url.com",
+    "protocol": {
+      "type": "http",
+      "version": "1.1",
+      "authentication": {
+        "type": "api_key",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    }
+  },
+  "resources": {
+    "tools": {
+      "$ref": "./mcp_tool_spec.json"
+    }
+  }
+}
