@@ -19,7 +19,8 @@ def extract(file):
             data = response.json()
             # Pretty-print the JSON output
             pretty_json = json.dumps(data["content"], indent=2, ensure_ascii=False)
-            return f"✅ Extraction successful for {data["filename"]}", pretty_json
+            data_filename = data["filename"]
+            return f"✅ Extraction successful for {data_filename}", pretty_json
         else:
             return f"❌ Error: {response.status_code}", response.text
 
@@ -54,11 +55,9 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
     gr.Markdown(
         """
         ### 关于此智能体
-        这是一个任务型、状态机驱动的智能体，专为高可靠性的结构化数据抽取而设计。其核心价值在于其架构模式，包括自我修复和严格的校验机制。
-        
-        [查看GitHub仓库](https://github.com/yanzhao77/spec-extraction-agent)
+        这是一个任务型、状态机驱动的智能体，专为高可靠性的结构化数据抽取而设计。拥有自我修复和严格的校验机制。
         """
     )
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    demo.launch(show_error=True)
